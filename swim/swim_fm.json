@@ -1,0 +1,50 @@
+{
+    "system": [
+        [
+            "servers",
+            "int",
+            1,
+            3,
+            "mandatory"
+        ],
+        [
+            "dimmer",
+            "real",
+            0,
+            1,
+            "mandatory"
+        ]
+    ],
+    "context": [
+        [
+            "requestArrivalRate",
+            "int",
+            0,
+            100,
+            "mandatory"
+        ]
+    ],
+    "structure": [
+        [
+            "system",
+            [
+                "servers",
+                "dimmer"
+            ],
+            "no_group"
+        ],
+        [
+            "context",
+            [
+                "requestArrivalRate"
+            ],
+            "no_group"
+        ]
+    ],
+    "cross tree constraints": [],
+    "interval size": {
+        "servers": 1,
+        "dimmer": 0.1,
+        "requestArrivalRate": 25
+    }
+}
