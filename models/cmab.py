@@ -109,11 +109,11 @@ class ThompsonSampling(CMAB):
 
 
 if __name__ == "__main__":
-    from feature_model import FM
+    from feature_model import NumericalFM
     import os
 
     file_path = os.path.join(os.path.dirname(__file__), "..", "swim", "swim_fm.json")
-    feature_model = FM(os.path.abspath(file_path))
+    feature_model = NumericalFM(os.path.abspath(file_path))
 
     epsilon_greedy = EpsilonGreedy(
         feature_model.valid_valid_configurations_numerical,

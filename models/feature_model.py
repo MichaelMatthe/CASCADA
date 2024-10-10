@@ -165,10 +165,6 @@ class FM:
         self.fm_pl = And(Implies(True, self.features[ROOT].symbol))
         self.create_feature_relationships()
 
-        self.system_feature_names = []
-        self.context_feature_names = []
-        self.valid_configurations_numerical = self.generate_numerical_truth_table()
-
     def add_pl_term(self, term):
         self.fm_pl = And(self.fm_pl, term)
 
@@ -215,7 +211,7 @@ class FM:
                     "Invalid structure type", structure.parent.name, structure.type
                 )
 
-    def generate_truth_table(self):
+    def generate_truth_table(self) -> list[list[int]]:
         fm_file_path = "fm_saves/fm_valid_configs.json"
         fm_file = Path(fm_file_path)
 
@@ -236,6 +232,16 @@ class FM:
                 json.dump(valid_table, f)
 
         return valid_table
+
+
+class NumericalFM(FM):
+
+    def __init__(self, json_file: str) -> None:
+        super().__init__(json_file)
+
+        self.system_feature_names = []
+        self.context_feature_names = []
+        self.valid_configurations_numerical = self.generate_numerical_truth_table()
 
     def generate_numerical_truth_table(self) -> pandas.DataFrame:
         valid_table = self.generate_truth_table()
@@ -338,25 +344,6 @@ class FM:
             "Value outside of valid range",
             "feature: {}, value: {}".format(feature_name, value),
         )
-
-    def context_system_dictionary(self):
-
-        context_system_dictionary = {}
-
-        for _, configuration in self.valid_configurations_numerical.iterrows():
-            context = tuple(configuration.loc[self.context_feature_names])
-            if context not in context_system_dictionary:
-                context_system_dictionary[context] = pandas.DataFrame(
-                    columns=self.system_feature_names
-                )
-
-            system_configuration = configuration.loc[self.system_feature_names]
-            context_system_dictionary[context] = pandas.concat(
-                [context_system_dictionary[context], system_configuration.to_frame().T],
-                ignore_index=True,
-            )
-
-        return context_system_dictionary
 
 
 if __name__ == "__main__":
