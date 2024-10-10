@@ -236,7 +236,7 @@ class FM:
 
 class NumericalFM(FM):
 
-    def __init__(self, json_file: str) -> None:
+    def __init__(self, json_file: dict) -> None:
         super().__init__(json_file)
 
         self.system_feature_names = []

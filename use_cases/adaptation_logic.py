@@ -4,10 +4,7 @@ from models.cmab import CMAB
 
 class AdaptationLogic:
 
-    def __init__(
-        self, configuration_space: pandas.DataFrame, simulation_client, cmab: CMAB
-    ):
-        self.configuration_space = configuration_space
+    def __init__(self, simulation_client, cmab: CMAB):
         self.simulation_client = simulation_client
         self.cmab = cmab
 

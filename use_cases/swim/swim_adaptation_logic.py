@@ -1,5 +1,9 @@
+import pandas
+
 from use_cases.swim.swim_client import SwimClient
-from use_cases.adaptation_logic import Adaptation_logic
+from use_cases.adaptation_logic import AdaptationLogic
+from models.feature_model import NumericalFM
+from models.cmab import CMAB
 
 
 class MonitoredValues:
@@ -30,12 +34,8 @@ class MonitoredValues:
 
 class SWIMAdapatationLogic(AdaptationLogic):
 
-    def __init__(
-        self, configuration_space: pandas.DataFrame, simulation_client, cmab: CMAB
-    ):
-        # feature model
-        self.feature_model = FM("swim_fm.json")
-        valid_configurations = self.feature_model.generate_numerical_truth_table()
+    def __init__(self, simulation_client, cmab: CMAB):
+        super().__init__(simulation_client, cmab)
 
     def monitor_context(self) -> pandas.Series:
         pass
