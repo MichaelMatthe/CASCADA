@@ -1,20 +1,17 @@
-from pathlib import Path
-import json
-
 from models.feature_model import NumericalFM
 from models.cmab import EpsilonGreedy
-from use_cases.swim.swim_client import SwimClient
-from use_cases.swim.swim_adaptation_logic import SWIMAdapatationLogic
+from use_cases.swim.swim_adaptation_logic import (
+    SWIMAdapatationLogic,
+    SWIMSimulatorInterface,
+)
 
-if True:
 
-    feature_model = NumericalFM("use_cases/swim/swim_fm.json")
-    valid_configurations = feature_model.generate_numerical_truth_table()
-    context_features = feature_model.context_feature_names
+feature_model = NumericalFM("use_cases/swim/swim_fm.json")
+cmab_epsilon_greedy = EpsilonGreedy(feature_model, 0.9)
+swim_simulator_interface = SWIMSimulatorInterface(feature_model)
 
-    swim_client = SwimClient()
-    swim_client.connect("localhost", 4242)
+swim_adaptation_logic = SWIMAdapatationLogic(
+    swim_simulator_interface, cmab_epsilon_greedy, feature_model
+)
 
-    cmab_epsilon_greedy = EpsilonGreedy(valid_configurations, context_features, 0.9)
-
-    swim_adaptation_logic = SWIMAdapatationLogic(swim_client, cmab_epsilon_greedy)
+swim_adaptation_logic.run(1)
