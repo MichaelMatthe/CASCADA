@@ -116,7 +116,7 @@ class NumericalSubFeature:
 
 class FM:
 
-    def __init__(self, json_file):
+    def __init__(self, json_file: str) -> None:
 
         with open(json_file) as file:
             fm_json = json.load(file)
@@ -236,7 +236,7 @@ class FM:
 
 class NumericalFM(FM):
 
-    def __init__(self, json_file: dict) -> None:
+    def __init__(self, json_file: str) -> None:
         super().__init__(json_file)
 
         self.system_feature_names = []
