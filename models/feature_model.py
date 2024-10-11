@@ -212,24 +212,13 @@ class FM:
                 )
 
     def generate_truth_table(self) -> list[list[int]]:
-        fm_file_path = "fm_saves/fm_valid_configs.json"
-        fm_file = Path(fm_file_path)
-
-        os.makedirs("fm_saves", exist_ok=True)
-
-        if fm_file.is_file():
-            with open(fm_file_path, "r") as f:
-                valid_table = json.load(f)
-        else:
-            valid_table = []
-            table = truth_table(
-                self.fm_pl, [feature.symbol for feature in self.features.values()]
-            )
-            for line in table:
-                if line[-1]:
-                    valid_table.append(line[0])
-            with open(fm_file_path, "w") as f:
-                json.dump(valid_table, f)
+        valid_table = []
+        table = truth_table(
+            self.fm_pl, [feature.symbol for feature in self.features.values()]
+        )
+        for line in table:
+            if line[-1]:
+                valid_table.append(line[0])
 
         return valid_table
 
