@@ -1,15 +1,15 @@
 import numpy as np
 import pandas
 
+from models.feature_model import NumericalFM
+
 
 class CMAB:
     # Contextual Multi Armed Bandit
 
-    def __init__(
-        self, valid_configurations: pandas.DataFrame, context_features: list[str]
-    ):
-        self.valid_configurations = valid_configurations
-        self.context_features = context_features
+    def __init__(self, feature_model: NumericalFM):
+        self.valid_configurations = feature_model.valid_configurations_numerical
+        self.context_features = feature_model.context_feature_names
 
     def select_arm(self, context: pandas.Series):
         pass
@@ -22,19 +22,18 @@ class EpsilonGreedy(CMAB):
 
     def __init__(
         self,
-        valid_configurations: pandas.DataFrame,
-        context_features: list[str],
+        feature_model: NumericalFM,
         epsilon: float,
     ):
 
-        super().__init__(valid_configurations, context_features)
+        super().__init__(feature_model)
         self.epsilon = epsilon
 
         self.valid_configurations["R"] = pandas.Series(
-            [0] * valid_configurations.shape[0]
+            [0] * self.valid_configurations.shape[0]
         )
         self.valid_configurations["N"] = pandas.Series(
-            [0] * valid_configurations.shape[0]
+            [0] * self.valid_configurations.shape[0]
         )
 
     def select_arm(self, context):
@@ -64,18 +63,17 @@ class EpsilonGreedy(CMAB):
         pass
 
 
-class AdaptiveEpsilonGreedy(EpsilonGreedy):
+class AdaptiveEpsilonGreedy(CMAB):
 
     def __init__(
         self,
-        valid_configurations: pandas.DataFrame,
-        context_features: list[str],
+        feature_model: NumericalFM,
         epsilon_start: float,
         epsilon_min: float,
         decay_constant: float,
     ):
 
-        super().__init__(valid_configurations, context_features, epsilon_start)
+        super().__init__(feature_model)
         self.epsilon_start = epsilon_start
         self.epsilon_min = epsilon_min
         self.decay_constant = decay_constant
@@ -96,44 +94,11 @@ class AdaptiveEpsilonGreedy(EpsilonGreedy):
 
 class ThompsonSampling(CMAB):
 
-    def __init__(
-        self, valid_configurations: pandas.DataFrame, context_features: list[str]
-    ):
-        super().__init__(valid_configurations, context_features)
+    def __init__(self, feature_model: NumericalFM):
+        super().__init__(feature_model)
 
     def select_arm(self, context: pandas.Series):
         pass
 
     def update_arm(self, configuration: pandas.Series, reward: float):
         pass
-
-
-if __name__ == "__main__":
-    from feature_model import NumericalFM
-    import os
-
-    file_path = os.path.join(os.path.dirname(__file__), "..", "swim", "swim_fm.json")
-    feature_model = NumericalFM(os.path.abspath(file_path))
-
-    epsilon_greedy = EpsilonGreedy(
-        feature_model.valid_valid_configurations_numerical,
-        feature_model.context_feature_names,
-        0.9,
-    )
-
-    test_context = pandas.Series(
-        {
-            "requestArrivalRate": 1,
-            "requestArrivalRate_0": 1,
-            "requestArrivalRate_25": 0,
-            "requestArrivalRate_50": 0,
-            "requestArrivalRate_75": 0,
-            "requestArrivalRate_100": 0,
-        }
-    )
-
-    for _ in range(100):
-        selected_config = epsilon_greedy.select_arm(test_context)
-        print(selected_config)
-        epsilon_greedy.update_arm(selected_config, 5)
-        break
