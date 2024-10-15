@@ -11,7 +11,7 @@ class CMAB:
         self.valid_configurations = feature_model.valid_configurations_numerical
         self.context_features = feature_model.context_feature_names
 
-    def select_arm(self, context: pandas.Series):
+    def select_arm(self, context: pandas.Series) -> pandas.Series:
         pass
 
     def update_arm(self, configuration: pandas.Series, reward: float):

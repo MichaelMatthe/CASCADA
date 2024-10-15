@@ -1,7 +1,8 @@
 # SWIM - Docker
 
-Run docker container (add port 4242 for external adaptation control)
+Make sure docker (desktop) is running.
 
+Run docker container (add port 4242 for external adaptation control)
 
 ```powershell
 docker run -d -p 5901:5901 -p 6901:6901 -p 4242:4242 --name swim gabrielmoreno/swim

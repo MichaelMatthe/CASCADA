@@ -27,12 +27,13 @@ class SWIMSimulatorInterface(SimulatorInterface):
         context["requestArrivalRate"] = 1
         context[arrival_rate_feature] = 1
 
+        # TODO
         reward = 10
 
         return context, reward
 
     def effector_interface(self, configuration: pandas.Series) -> None:
-        return super().effector_interface(configuration)
+        pass
 
     def connect_to_simulator(self):
         self.swim_client.connect("localhost", 4242)
@@ -53,6 +54,9 @@ class SWIMAdapatationLogic(AdaptationLogic):
 
     def monitor(self) -> tuple[pandas.Series, float]:
         return self.simulation_interface.sensor_interface()
+
+    def delayed_feedback_available(self) -> bool:
+        return True
 
     def analysis_and_plan(self) -> pandas.Series:
         return None

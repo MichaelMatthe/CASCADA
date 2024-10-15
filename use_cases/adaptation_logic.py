@@ -46,12 +46,18 @@ class AdaptationLogic:
         pass
 
     def delayed_feedback_available(self) -> bool:
-        pass
+        return True
 
     def analysis_and_plan(self) -> pandas.Series:
         pass
 
     def execute(self, system_configuration: pandas.Series) -> None:
+        pass
+
+    def get_only_context(self, config: pandas.Series) -> pandas.Series:
+        pass
+
+    def get_only_system(self, config: pandas.Series) -> pandas.Series:
         pass
 
 
