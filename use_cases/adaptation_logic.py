@@ -25,7 +25,11 @@ class AdaptationLogic:
 
         for run in range(num_runs):
             # 1 Monitor
-            current_configuration, reward = self.monitor()
+            try:
+                current_configuration, reward = self.monitor()
+            except ValueError as err:
+                print(err, "Exiting adpation logic")
+                break
             print(f"--- Monitoring: \n{current_configuration}, \nreward: {reward}")
 
             if self.delayed_feedback_available():
@@ -55,10 +59,10 @@ class AdaptationLogic:
         pass
 
     def get_only_context(self, config: pandas.Series) -> pandas.Series:
-        pass
+        return config.loc[self.context_features]
 
     def get_only_system(self, config: pandas.Series) -> pandas.Series:
-        pass
+        return config.loc[self.system_features]
 
 
 class SimulatorInterface:

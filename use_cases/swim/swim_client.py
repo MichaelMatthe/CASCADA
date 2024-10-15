@@ -37,16 +37,16 @@ class SwimClient:
         try:
             return float(resp)
         except ValueError as err:
-            print(err)
-            # TODO handle error / raise
+            print(err, "SWIM Client probe_float")
+            return None
 
     def probe_int(self, command):
         resp = self.send_command(command)
         try:
             return int(resp)
         except ValueError as err:
-            print(err)
-            # TODO handle error / raise
+            print(err, "SWIM Client probe_int")
+            return None
 
     # probes
     def get_dimmer(self):

@@ -14,7 +14,11 @@ class SWIMSimulatorInterface(SimulatorInterface):
         self.swim_client = SwimClient()
 
     def sensor_interface(self) -> tuple[pandas.Series, float]:
+
         arrival_rate = self.swim_client.get_arrival_rate()
+        if arrival_rate == None:
+            raise ValueError("Simulator not connected?")
+
         arrival_rate_feature = (
             self.feature_model.numerical_feature_value_to_numerical_name(
                 "requestArrivalRate", arrival_rate
@@ -33,7 +37,20 @@ class SWIMSimulatorInterface(SimulatorInterface):
         return context, reward
 
     def effector_interface(self, configuration: pandas.Series) -> None:
-        pass
+        for index, value in configuration.items():
+            if value == 1:
+                if index in [
+                    sub_feature
+                    for parent_feature, sub_features in self.feature_model.numerical_sub_features.items()
+                    for sub_feature in sub_features
+                ]:
+                    effector_value = (
+                        self.feature_model.numerical_feature_name_to_value_range(index)
+                    )
+                    print(
+                        index,
+                        effector_value,
+                    )
 
     def connect_to_simulator(self):
         self.swim_client.connect("localhost", 4242)
@@ -53,7 +70,10 @@ class SWIMAdapatationLogic(AdaptationLogic):
         super().__init__(simulation_interface, cmab, feature_model)
 
     def monitor(self) -> tuple[pandas.Series, float]:
-        return self.simulation_interface.sensor_interface()
+        try:
+            return self.simulation_interface.sensor_interface()
+        except ValueError as err:
+            raise
 
     def delayed_feedback_available(self) -> bool:
         return True
@@ -62,4 +82,6 @@ class SWIMAdapatationLogic(AdaptationLogic):
         return None
 
     def execute(self, system_configuration: pandas.Series) -> None:
-        SimulatorInterface.effector_interface(system_configuration)
+        self.simulation_interface.effector_interface(
+            self.get_only_system(system_configuration)
+        )
