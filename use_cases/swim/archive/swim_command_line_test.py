@@ -1,11 +1,12 @@
 import time
-from swim.swim_client import SwimClient
+from use_cases.swim.swim_client import SwimClient
 
 if __name__ == "__main__":
     swim_client = SwimClient()
     swim_client.connect("localhost", 4242)
 
     while True:
+        print("active_servers: {}".format(swim_client.get_active_servers()))
         print("servers: {}".format(swim_client.get_servers()))
         input_value = input("Command:")
         if input_value == "exit":
@@ -19,6 +20,8 @@ if __name__ == "__main__":
             swim_client.set_dimmer(dimmer_value)
         elif input_value == "max_servers":
             print(swim_client.get_max_servers())
+        elif input_value == "active_servers":
+            print(swim_client.get_active_servers())
         else:
             print("Invalid Command")
         time.sleep(0.5)
