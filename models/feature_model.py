@@ -107,11 +107,21 @@ class CrossTreeConstraint:
 
 class NumericalSubFeature:
 
-    def __init__(self, name: str, branch: str, lb: float, ub: float) -> None:
+    def __init__(
+        self, name: str, branch: str, lb: float, ub: float, parent: Feature
+    ) -> None:
         self.name = name
         self.branch = branch
         self.lb = lb
         self.ub = ub
+        self.parent = parent
+
+    def get_value(self) -> int | float:
+        if self.parent.type == INT:
+            return self.lb
+        if self.parent.type == REAL:
+            return self.lb + (self.ub - self.lb) / 2
+        raise TypeError("Feature is neither INT nor REAL!?")
 
 
 class FM:
@@ -259,16 +269,21 @@ class NumericalFM(FM):
                     range_ub += 1
 
                 numerical_sub_feature_list = []
-                for index_match in range(range_lb, range_ub, range_interval_size):
-                    sub_feature_name = feature.name + "_" + str(index_match)
+                for list_index, index_name in enumerate(
+                    [val for val in range(range_lb, range_ub, range_interval_size)]
+                ):
+                    sub_feature_name = feature.name + "_" + str(index_name)
                     ordered_names.append(sub_feature_name)
+                    lower_bound = feature.lb + feature.interval_size * list_index
+                    upper_bound = feature.lb + feature.interval_size * (list_index + 1)
 
                     numerical_sub_feature_list.append(
                         NumericalSubFeature(
                             sub_feature_name,
                             feature.branch,
-                            feature.lb + feature.interval_size * index_match,
-                            feature.lb + (index_match + 1) * feature.interval_size,
+                            lower_bound,
+                            upper_bound,
+                            parent=feature,
                         )
                     )
                     if feature.branch == SYSTEM:
@@ -283,13 +298,13 @@ class NumericalFM(FM):
                     # check if feature is part of valid config
                     if entry[parent_feature_index] == 1:
 
-                        for index_match in range(
+                        for index_name in range(
                             range_lb, range_ub, range_interval_size
                         ):
                             temp_valid_table.append(
                                 entry
                                 + [
-                                    1 if index == index_match else 0
+                                    1 if index == index_name else 0
                                     for index in range(
                                         range_lb, range_ub, range_interval_size
                                     )
@@ -314,11 +329,11 @@ class NumericalFM(FM):
         )
         return pandas.DataFrame(valid_table, columns=ordered_names)
 
-    def numerical_feature_name_to_value_range(self, numerical_feature_name):
+    def numerical_feature_name_to_feature(self, numerical_feature_name):
         for numerical_features in self.numerical_sub_features.values():
             for sub_feature in numerical_features:
                 if sub_feature.name == numerical_feature_name:
-                    return (sub_feature.lb, sub_feature.ub)
+                    return sub_feature
         raise ValueError("Numerical sub feature does not exist", numerical_feature_name)
 
     def numerical_feature_value_to_numerical_name(self, feature_name, value):

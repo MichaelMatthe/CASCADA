@@ -30,9 +30,9 @@ class AdaptationLogic:
             except ValueError as err:
                 print(err, "Exiting adpation logic")
                 break
-            print(f"--- Monitoring: \n{current_configuration}, \nreward: {reward}")
+            # print(f"--- Monitoring: \n{current_configuration}, \nreward: {reward}")
 
-            if self.delayed_feedback_available():
+            if self.delayed_feedback_available(adaptation_loop_interval):
                 # Delayed feedback / reward if latency involved
                 self.cmab.update_arm(current_configuration, reward)
 
@@ -49,7 +49,7 @@ class AdaptationLogic:
     def monitor(self) -> tuple[pandas.Series, float]:
         pass
 
-    def delayed_feedback_available(self) -> bool:
+    def delayed_feedback_available(self, adaptation_loop_interval) -> bool:
         return True
 
     def analysis_and_plan(self) -> pandas.Series:
