@@ -3,5 +3,5 @@
 In directory ../cascada
 
 ```
-python - use_cases.swim.archive.swim_command_line_test
+python -m use_cases.swim.archive.swim_command_line_test
 ```
