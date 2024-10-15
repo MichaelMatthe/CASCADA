@@ -19,22 +19,49 @@ class SWIMSimulatorInterface(SimulatorInterface):
         if arrival_rate == None:
             raise ValueError("Simulator not connected?")
 
+        servers = self.swim_client.get_servers()
+        dimmer = self.swim_client.get_dimmer()
+
         arrival_rate_feature = (
             self.feature_model.numerical_feature_value_to_numerical_name(
                 "requestArrivalRate", arrival_rate
             )
         )
-
-        context = pandas.Series(
-            pandas.Series(0, index=self.feature_model.context_feature_names)
+        servers_feature = self.feature_model.numerical_feature_value_to_numerical_name(
+            "servers", servers
         )
-        context["requestArrivalRate"] = 1
-        context[arrival_rate_feature] = 1
+        dimmer_feature = self.feature_model.numerical_feature_value_to_numerical_name(
+            "dimmer", dimmer
+        )
 
-        # TODO
-        reward = 10
+        configuration = pandas.Series(
+            pandas.Series(
+                0,
+                index=self.feature_model.valid_configurations_numerical.drop(
+                    columns=["R", "N"]
+                ).columns,
+            )
+        )
+        for feature in ["root", "system", "context", "servers", "dimmer"]:
+            configuration[feature] = 1
+        configuration["requestArrivalRate"] = 1
+        configuration[arrival_rate_feature] = 1
+        configuration[servers_feature] = 1
+        configuration[dimmer_feature] = 1
 
-        return context, reward
+        # Utility
+        maximum_response_time = 0.75  # T
+        average_response_time = self.swim_client.get_average_response_time()
+        tau = 10
+        r_m = 1
+        r_o = 1.5
+        kappa = 67.4
+        if average_response_time <= maximum_response_time:
+            reward = tau * arrival_rate * (dimmer * r_o + (1 - dimmer) * r_m)
+        else:
+            reward = tau * min(0, arrival_rate - kappa) * r_o
+
+        return configuration, reward
 
     def effector_interface(self, configuration: pandas.Series) -> None:
         for index, value in configuration.items():

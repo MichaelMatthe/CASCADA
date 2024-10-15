@@ -14,4 +14,4 @@ swim_adaptation_logic = SWIMAdapatationLogic(
     swim_simulator_interface, cmab_epsilon_greedy, feature_model
 )
 
-swim_adaptation_logic.run(1)
+swim_adaptation_logic.run(100)
