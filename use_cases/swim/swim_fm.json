@@ -10,8 +10,8 @@
         [
             "dimmer",
             "real",
-            0,
-            1,
+            0.0,
+            1.0,
             "mandatory"
         ]
     ],
@@ -44,7 +44,7 @@
     "cross tree constraints": [],
     "interval size": {
         "servers": 1,
-        "dimmer": 0.1,
+        "dimmer": 0.2,
         "requestArrivalRate": 25
     }
 }
