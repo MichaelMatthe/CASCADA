@@ -24,16 +24,15 @@ class CMAB:
 class EpsilonGreedy(CMAB):
 
     def __init__(
-        self,
-        feature_model: NumericalFM,
-        epsilon: float,
+        self, feature_model: NumericalFM, epsilon: float, learning_rate: float
     ):
 
         super().__init__(feature_model)
         self.epsilon = epsilon
+        self.learning_rate = learning_rate
 
         self.valid_configurations[REWARD] = pandas.Series(
-            [0] * self.valid_configurations.shape[0]
+            [0.0] * self.valid_configurations.shape[0]
         )
         self.valid_configurations[NUMBER_PULLS] = pandas.Series(
             [0] * self.valid_configurations.shape[0]
@@ -48,10 +47,10 @@ class EpsilonGreedy(CMAB):
         matching_configs = self.valid_configurations[mask]
 
         if np.random.rand() < self.epsilon:
-            print("--- random")
+            print("CMAB random")
             return matching_configs.sample().iloc[0]
         else:
-            print("--- max")
+            print("CMAB max")
             best_config = matching_configs.loc[matching_configs[REWARD].idxmax()].drop(
                 ["R", "N"]
             )
@@ -63,12 +62,15 @@ class EpsilonGreedy(CMAB):
         mask = (self.valid_configurations[columns_to_check] == configuration).all(
             axis=1
         )
-        matching_config = self.valid_configurations[mask].iloc[0]
-        r_old = matching_config
-        r_new = 0
-        # max_next_reward = 0
+        index_of_config = mask.idxmax()
 
-        pass
+        # TODO update R and N
+        r = self.valid_configurations.loc[index_of_config, "R"]
+        self.valid_configurations.loc[index_of_config, "R"] = r + self.learning_rate * (
+            reward - r
+        )
+        n = self.valid_configurations.loc[index_of_config, "N"]
+        self.valid_configurations.loc[index_of_config, "N"] = n + 1
 
 
 class AdaptiveEpsilonGreedy(CMAB):
@@ -98,6 +100,8 @@ class AdaptiveEpsilonGreedy(CMAB):
             self.epsilon_min,
             self.epsilon_start - self.decay_constant * sum(self.valid_configurations),
         )
+
+        # TODO implement other decays
 
 
 class ThompsonSampling(CMAB):

@@ -26,7 +26,7 @@ class SWIMSimulatorInterface(SimulatorInterface):
 
         servers = self.swim_client.get_servers()
         self.servers = servers
-        dimmer = self.swim_client.get_dimmer()
+        dimmer = round(self.swim_client.get_dimmer(), 2)
         self.dimmer = dimmer
 
         arrival_rate_feature = (
@@ -59,7 +59,7 @@ class SWIMSimulatorInterface(SimulatorInterface):
         # Utility
         maximum_response_time = 0.75  # T
         average_response_time = self.swim_client.get_average_response_time()
-        tau = 10
+        tau = 60  # adaptation_interval
         r_m = 1
         r_o = 1.5
         kappa = 67.4
@@ -68,10 +68,10 @@ class SWIMSimulatorInterface(SimulatorInterface):
         else:
             reward = tau * min(0, arrival_rate - kappa) * r_o
 
+        print(f"-M-onitor: arrival rate: {arrival_rate}, reward: {reward}")
         return configuration, reward
 
     def effector_interface(self, configuration: pandas.Series) -> None:
-        print("effector")
         for index, value in configuration.items():
             numerical_sub_features = [
                 sub_feature.name
@@ -87,11 +87,8 @@ class SWIMSimulatorInterface(SimulatorInterface):
                     if sub_feature.parent.name == "servers":
                         new_servers = sub_feature.get_value()
                     if sub_feature.parent.name == "dimmer":
-                        new_dimmer = sub_feature.get_value()
+                        new_dimmer = round(sub_feature.get_value(), 2)
 
-        print(
-            f"Servers: {self.servers}, Dimmer: {self.dimmer}, new_servers: {new_servers}, new_dimmer: {new_dimmer}"
-        )
         if new_servers < self.servers:
             # remove servers
             for _ in range(self.servers - new_servers):
@@ -102,6 +99,13 @@ class SWIMSimulatorInterface(SimulatorInterface):
                 self.swim_client.add_server()
         if new_dimmer != self.dimmer:
             self.swim_client.set_dimmer(new_dimmer)
+
+        if new_servers == self.servers and new_dimmer == self.dimmer:
+            print("-E-xecute: No reconfiguration")
+        else:
+            print(
+                f"-E-xecute: Servers: Server-Delta: {new_servers - self.servers}\t Dimmer-Delta: {round(new_dimmer - self.dimmer, 2)}\tServers: {self.servers} -> {new_servers}, Dimmer: {self.dimmer} -> {new_dimmer}"
+            )
 
     def connect_to_simulator(self):
         self.swim_client.connect("localhost", 4242)
@@ -126,12 +130,14 @@ class SWIMAdapatationLogic(AdaptationLogic):
         except ValueError as err:
             raise
 
-    def delayed_feedback_available(self, adaptation_loop_interval) -> bool:
-        time.sleep(adaptation_loop_interval)
+    def delayed_feedback_available(self) -> bool:
+        if (
+            self.simulation_interface.swim_client.get_active_servers()
+            != self.simulation_interface.swim_client.get_servers()
+        ):
+            print("Adding server")
+            return False
         return True
-
-    def analysis_and_plan(self) -> pandas.Series:
-        return None
 
     def execute(self, system_configuration: pandas.Series) -> None:
         self.simulation_interface.effector_interface(

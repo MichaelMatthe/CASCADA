@@ -2,6 +2,8 @@ import pandas
 from models.cmab import CMAB
 from models.feature_model import NumericalFM
 
+import time
+
 
 class AdaptationLogic:
 
@@ -19,11 +21,12 @@ class AdaptationLogic:
         self.context_features = self.feature_model.context_feature_names
         self.system_features = self.feature_model.system_feature_names
 
-    def run(self, num_runs=1, adaptation_loop_interval=5):
+    def run(self, num_runs=1, adaptation_loop_interval=1):
 
         self.simulation_interface.connect_to_simulator()
 
         for run in range(num_runs):
+            print(f"--- Run: {run}")
             # 1 Monitor
             try:
                 current_configuration, reward = self.monitor()
@@ -32,15 +35,19 @@ class AdaptationLogic:
                 break
             # print(f"--- Monitoring: \n{current_configuration}, \nreward: {reward}")
 
-            if self.delayed_feedback_available(adaptation_loop_interval):
-                # Delayed feedback / reward if latency involved
-                self.cmab.update_arm(current_configuration, reward)
+            if self.delayed_feedback_available():
 
                 # 2 Analysis and Plan
-                selected_configuration = self.cmab.select_arm(current_configuration)
+                selected_configuration = self.analysis_and_plan(
+                    current_configuration, reward, run
+                )
 
                 # 3 Execute
                 self.execute(selected_configuration)
+            print(
+                f"Waiting for adaptation loop interval: {adaptation_loop_interval} secs"
+            )
+            time.sleep(adaptation_loop_interval)
 
             # Function for timing the AL to the given interval
 
@@ -49,11 +56,16 @@ class AdaptationLogic:
     def monitor(self) -> tuple[pandas.Series, float]:
         pass
 
-    def delayed_feedback_available(self, adaptation_loop_interval) -> bool:
+    def delayed_feedback_available(self) -> bool:
         return True
 
-    def analysis_and_plan(self) -> pandas.Series:
-        pass
+    def analysis_and_plan(
+        self, current_configuration: pandas.Series, reward: float, run: int
+    ) -> pandas.Series:
+        print("-A- and -P-")
+        if run != 0:
+            self.cmab.update_arm(current_configuration, reward)
+        return self.cmab.select_arm(current_configuration)
 
     def execute(self, system_configuration: pandas.Series) -> None:
         pass
