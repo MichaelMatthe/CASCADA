@@ -3,6 +3,9 @@ import pandas
 
 from models.feature_model import NumericalFM
 
+REWARD = "R"
+NUMBER_PULLS = "N"
+
 
 class CMAB:
     # Contextual Multi Armed Bandit
@@ -11,7 +14,7 @@ class CMAB:
         self.valid_configurations = feature_model.valid_configurations_numerical
         self.context_features = feature_model.context_feature_names
 
-    def select_arm(self, context: pandas.Series) -> pandas.Series:
+    def select_arm(self, configuration: pandas.Series) -> pandas.Series:
         pass
 
     def update_arm(self, configuration: pandas.Series, reward: float):
@@ -29,14 +32,16 @@ class EpsilonGreedy(CMAB):
         super().__init__(feature_model)
         self.epsilon = epsilon
 
-        self.valid_configurations["R"] = pandas.Series(
+        self.valid_configurations[REWARD] = pandas.Series(
             [0] * self.valid_configurations.shape[0]
         )
-        self.valid_configurations["N"] = pandas.Series(
+        self.valid_configurations[NUMBER_PULLS] = pandas.Series(
             [0] * self.valid_configurations.shape[0]
         )
 
-    def select_arm(self, context):
+    def select_arm(self, configuration):
+        # extract context
+        context = configuration.loc[self.context_features]
 
         columns_to_check = context.index
         mask = (self.valid_configurations[columns_to_check] == context).all(axis=1)
@@ -47,9 +52,12 @@ class EpsilonGreedy(CMAB):
             return matching_configs.sample().iloc[0]
         else:
             print("--- max")
-            return matching_configs.loc(matching_configs["R"].idxmax()).iloc[0]
+            best_config = matching_configs.loc[matching_configs[REWARD].idxmax()].drop(
+                ["R", "N"]
+            )
+            return best_config
 
-    def update_arm(self, configuration, reward):
+    def update_arm(self, configuration: pandas.Series, reward: float) -> None:
 
         columns_to_check = configuration.index
         mask = (self.valid_configurations[columns_to_check] == configuration).all(
@@ -78,8 +86,8 @@ class AdaptiveEpsilonGreedy(CMAB):
         self.epsilon_min = epsilon_min
         self.decay_constant = decay_constant
 
-    def select_arm(self, context: pandas.Series):
-        return super().select_arm(context)
+    def select_arm(self, configuration: pandas.Series):
+        return super().select_arm(configuration)
 
     def update_arm(self, configuration: pandas.Series, reward: float):
         super().update_arm(configuration, reward)
